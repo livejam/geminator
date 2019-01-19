@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "name": "geminator",
+  "version": "0.1.0",
+  "bin": {
+    "geminator": "bin/geminator.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "build-layer": "cd build && ./build.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^8.9.4",
+    "aws-cdk": "^0.22.0",
+    "typescript": "^3.1.2"
+  },
+  "dependencies": {
+    "@aws-cdk/assets": "^0.22.0",
+    "@aws-cdk/aws-ec2": "^0.22.0",
+    "@aws-cdk/aws-lambda": "^0.22.0",
+    "@aws-cdk/cdk": "^0.22.0"
+  }
+}
