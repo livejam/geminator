@@ -27,6 +27,12 @@ export class GeminatorStack extends cdk.Stack {
       memorySize: 512
     });
 
+    new cdk.Output(this, "BundleUpdateLambda", {
+      description: "Lambda ARN for Bundle Update",
+      value: bundleUpdate.functionArn,
+      disableExport: true
+    });
+
     const functionResource = bundleUpdate.node.findChild(
       "Resource"
     ) as lambda.CfnFunction;
