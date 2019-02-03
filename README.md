@@ -31,6 +31,14 @@ yarn run build
 cdk deploy
 ```
 
+## Configuration
+
+### Lambda Envs
+
+- `WORKING_BRANCH` (defaults to `geminator`)
+- `GIT_PROVIDER` (either `github` or `gitlab`)
+- `PRIVATE_TOKEN` (private access token passed in via the AWS Parameter Store. Expected under `/CDK/GitlabToken` or `/CDK/GithubToken`)
+
 # Useful commands
 
 - `npm run build` compile typescript to js
