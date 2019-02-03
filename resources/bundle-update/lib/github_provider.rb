@@ -61,4 +61,8 @@ class GithubProvider
   rescue Octokit::UnprocessableEntity => e
     nil
   end
+
+  def pull_request_url
+    @client.pull_requests(@project, :state => 'open', head: @working_branch).first.html_url
+  end
 end

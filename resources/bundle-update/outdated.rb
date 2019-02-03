@@ -13,7 +13,6 @@ def provider_class
 end
 
 def handler(event:, context:)
-  gem_name = event['gem_name']
   project = event['project']
   dir = Dir.mktmpdir
 
@@ -21,40 +20,30 @@ def handler(event:, context:)
     endpoint: '',
     private_token: ENV.fetch("PRIVATE_TOKEN"),
     project: project,
-    working_branch: ENV.fetch("WORKING_BRANCH", "geminator"),
+    working_branch: 'master',
     working_dir: dir
   )
 
-  git.ensure_working_branch
   files = git.fetch_files("Gemfile", "Gemfile.lock")
   files.each do |file|
     File.write(File.join(dir, file.file_name), file.content)
   end
 
+  @outdated = ''
+
   Dir.chdir(dir) {
-    puts %x[bundle lock --update #{gem_name} --conservative]
+    @outdated = %x[bundle outdated --parseable --strict]
   }
 
-  gemfile_lock = files.detect { |f| f.file_name == "Gemfile.lock" }
-
-  content = IO.read(File.join(dir, gemfile_lock.file_name))
-  if gemfile_lock.content != content
-    git.commit(gemfile_lock, content, "Upgrade #{gem_name} conservatively")
-    result = {
-      message: "Upgraded #{gem_name} for #{project}"
+  @outdated.strip.split("\n").map do |line|
+    line =~ /([^\s]+)\s\(newest\s([\d\.]+),\sinstalled\s([\d\.]+)/
+    next unless $1
+    {
+      name: $1,
+      newest: $2,
+      installed: $3
     }
-    puts "upgraded gem"
-    git.ensure_pull_request
-    puts "created pull request"
-  else
-    result = {
-      message: "Nothing changed"
-    }
-    puts "nothing changed"
-  end
-  {
-    result: result.merge(url: git.pull_request_url)
-  }
+  end.compact
 ensure
   FileUtils.remove_entry(dir) if dir
 end

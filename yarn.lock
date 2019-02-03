@@ -22,6 +22,13 @@
     "@aws-cdk/cdk" "^0.22.0"
     "@aws-cdk/cx-api" "^0.22.0"
 
+"@aws-cdk/aws-appsync@^0.22.0":
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/aws-appsync/-/aws-appsync-0.22.0.tgz#80ea2eca56a8554c97b2e92b8001f439d17e448b"
+  integrity sha512-9cjYGGTb7mU6q/cpCEwovPCcmfNZf/eyv2ChW92FtbxmC/oiTWWDF6wxa9a3F7Y4GLVa8/DuhAtsLnLrCKGELQ==
+  dependencies:
+    "@aws-cdk/cdk" "^0.22.0"
+
 "@aws-cdk/aws-autoscaling-api@^0.22.0":
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-autoscaling-api/-/aws-autoscaling-api-0.22.0.tgz#76f2ac6fcf25eb0883c86ddde185a866223e5644"
@@ -179,6 +186,18 @@
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-0.22.0.tgz#6bf487778c34abb740a9d27d1309f0c32e9a4c09"
   integrity sha512-48NWpV9SyjBu9jgCkdigeH5d0mLre9BQLEgTuHrNU0iqrsZR3PT3dV9nLJhvu54ufYCScz4LeLXsTpNedHEEFw==
+
+"@types/fs-extra@^5.0.4":
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-5.0.4.tgz#b971134d162cc0497d221adde3dbb67502225599"
+  integrity sha512-DsknoBvD8s+RFfSGjmERJ7ZOP1HI0UZRA3FSI+Zakhrc/Gy26YQsLI+m5V5DHxroHRJqCDLKJp7Hixn8zyaF7g==
+  dependencies:
+    "@types/node" "*"
+
+"@types/node@*":
+  version "10.12.21"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.21.tgz#7e8a0c34cf29f4e17a36e9bd0ea72d45ba03908e"
+  integrity sha512-CBgLNk4o3XMnqMc0rhb6lc77IwShMEglz05deDcn2lQxyXEZivfwgYJu7SMha9V5XcrP6qZuevTHV/QrN2vjKQ==
 
 "@types/node@^8.0.7", "@types/node@^8.9.4":
   version "8.10.39"
@@ -784,7 +803,7 @@ fs-constants@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
-fs-extra@^7.0.0:
+fs-extra@^7.0.0, fs-extra@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-7.0.1.tgz#4f189c44aa123b895f722804f55ea23eadc348e9"
   integrity sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==

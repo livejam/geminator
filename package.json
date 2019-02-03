@@ -18,8 +18,12 @@
   },
   "dependencies": {
     "@aws-cdk/assets": "^0.22.0",
+    "@aws-cdk/aws-appsync": "^0.22.0",
     "@aws-cdk/aws-ec2": "^0.22.0",
+    "@aws-cdk/aws-iam": "^0.22.0",
     "@aws-cdk/aws-lambda": "^0.22.0",
-    "@aws-cdk/cdk": "^0.22.0"
+    "@aws-cdk/cdk": "^0.22.0",
+    "@types/fs-extra": "^5.0.4",
+    "fs-extra": "^7.0.1"
   }
 }

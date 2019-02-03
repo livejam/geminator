@@ -1,0 +1,53 @@
+type Project {
+  slug: String!
+  dependencies: [GemDependency]
+}
+
+type GemDependency {
+  name: String
+  version: String
+  dependencies: [GemDependency]
+}
+
+type OutdatedDependency {
+  name: String
+  newest: String
+  installed: String
+}
+
+input ProjectFilter {
+  slug: String
+}
+
+input GemUpdateInput {
+  projectSlug: String!
+  gemName: String!
+}
+
+type GemUpdateResult {
+  result: Result
+  failure: Failure
+}
+
+type Failure {
+  message: String
+}
+
+type Result {
+  message: String
+  url: String
+}
+
+type Mutation {
+  updateGem(input: GemUpdateInput!): GemUpdateResult!
+}
+
+type Query {
+  projects(filter: ProjectFilter): [Project]
+  outdatedDependencies(projectSlug: String): [OutdatedDependency]
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}
