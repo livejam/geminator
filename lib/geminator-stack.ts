@@ -11,7 +11,7 @@ export class GeminatorStack extends cdk.Stack {
   }
 
   createLambda(layer: cdk.Resource) {
-    const gitProvider = new GitProviderParameter(this, "Github", {
+    const gitProviderToken = new GitProviderParameter(this, "Github", {
       provider: GitProvider.Github
     });
 
@@ -21,7 +21,7 @@ export class GeminatorStack extends cdk.Stack {
       handler: "main.handler",
       environment: {
         GIT_PROVIDER: GitProvider.Github,
-        PRIVATE_TOKEN: gitProvider.token
+        PRIVATE_TOKEN: gitProviderToken.token
       },
       timeout: 180,
       memorySize: 512
