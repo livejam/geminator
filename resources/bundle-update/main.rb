@@ -41,6 +41,8 @@ def handler(event:, context:)
   if gemfile_lock.content != content
     git.commit(gemfile_lock, content, "Upgrade #{gem_name} conservatively")
     puts "upgraded gem"
+    git.ensure_pull_request
+    puts "created pull request"
   else
     puts "nothing changed"
   end

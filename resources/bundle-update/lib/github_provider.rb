@@ -49,4 +49,16 @@ class GithubProvider
       :branch => @working_branch
     )
   end
+
+  def ensure_pull_request
+    @client.create_pull_request(
+      @project,
+      "master",
+      @working_branch,
+      "Geminator: Update Dependencies",
+      "![update all the things](https://memegenerator.net/img/instances/66279455/update-all-the-things.jpg)\n\nUpdate all the dependencies "
+    )
+  rescue Octokit::UnprocessableEntity => e
+    nil
+  end
 end
