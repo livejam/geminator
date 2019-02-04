@@ -37,13 +37,13 @@ export class GeminatorStack extends cdk.Stack {
   }
 
   createLambda(
-    layer: cdk.Resource,
+    layer: lambda.ILayerVersion,
     gitProviderToken: GitProviderParameter,
     name: string,
     handler: string
   ): lambda.IFunction {
     const bundleUpdate = new lambda.Function(this, name, {
-      runtime: new lambda.Runtime("ruby2.5"),
+      runtime: lambda.Runtime.Ruby25,
       code: lambda.Code.asset("resources/bundle-update"),
       handler: handler,
       environment: {
@@ -51,13 +51,9 @@ export class GeminatorStack extends cdk.Stack {
         PRIVATE_TOKEN: gitProviderToken.token
       },
       timeout: 180,
-      memorySize: 512
+      memorySize: 512,
+      layers: [layer]
     });
-
-    const functionResource = bundleUpdate.node.findChild(
-      "Resource"
-    ) as lambda.CfnFunction;
-    functionResource.propertyOverrides.layers = [layer.ref];
 
     return bundleUpdate;
   }
