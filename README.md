@@ -35,7 +35,7 @@ cdk deploy
 
 ## Queries
 
-There's an AppSync Api which allows querying for outdated and upgradeable gems.
+There's an AppSync API which allows querying for outdated and upgradeable gems.
 
 ![outdated](./outdated.png)
 
