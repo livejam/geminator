@@ -31,6 +31,20 @@ yarn run build
 cdk deploy
 ```
 
+## GraphQL API
+
+## Queries
+
+There's an AppSync Api which allows querying for outdated and upgradeable gems.
+
+![outdated](./outdated.png)
+
+## Mutations
+
+And then there's a mutation to upgrade a single Gem for a given repository.
+
+![upgrade](./upgrade.png)
+
 ## Configuration
 
 ### Lambda Envs
