@@ -33,13 +33,13 @@ cdk deploy
 
 ## GraphQL API
 
-## Queries
+### Queries
 
 There's an AppSync API which allows querying for outdated and upgradeable gems.
 
 ![outdated](./outdated.png)
 
-## Mutations
+### Mutations
 
 And then there's a mutation to upgrade a single Gem for a given repository.
 
