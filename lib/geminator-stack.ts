@@ -1,9 +1,9 @@
-import cdk = require("@aws-cdk/cdk");
+import cdk = require("@aws-cdk/core");
 import lambda = require("@aws-cdk/aws-lambda");
 import { CdkRubyBundlerLayer } from "./ruby-bundler-layer";
-import { GraphQlApi } from "./graphql-api";
+import { CustomGraphQlApi } from "./graphql-api";
 import { GitProvider, GitProviderParameter } from "./git-provider";
-import { CfnDataSource, CfnResolver } from "@aws-cdk/aws-appsync";
+import { LambdaDataSource, Resolver, GraphQLApi, MappingTemplate } from "@aws-cdk/aws-appsync";
 
 export class GeminatorStack extends cdk.Stack {
   public readonly graphQlApiUrl = "GraphQlApiUrl";
@@ -11,7 +11,7 @@ export class GeminatorStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
     const bundlerLayer = new CdkRubyBundlerLayer(this, "RubyBundlerLayer");
-    const graphQlApi = new GraphQlApi(this, "GraphQlApi");
+    const graphQlApi = new CustomGraphQlApi(this, "GraphQlApi");
 
     const gitProviderToken = new GitProviderParameter(this, "Github", {
       provider: GitProvider.Github
@@ -24,7 +24,7 @@ export class GeminatorStack extends cdk.Stack {
       "main.handler"
     );
 
-    this.createUpdateGraphQlHandler(bundleUpdate, graphQlApi);
+    this.createUpdateGraphQlHandler(bundleUpdate, graphQlApi.graphQlApiApi);
 
     const bundleOutdated = this.createLambda(
       bundlerLayer.layer,
@@ -33,9 +33,9 @@ export class GeminatorStack extends cdk.Stack {
       "outdated.handler"
     );
 
-    this.createOutdatedGraphQlHandler(bundleOutdated, graphQlApi);
+    this.createOutdatedGraphQlHandler(bundleOutdated, graphQlApi.graphQlApiApi);
   }
-
+ 
   createLambda(
     layer: lambda.ILayerVersion,
     gitProviderToken: GitProviderParameter,
@@ -43,14 +43,14 @@ export class GeminatorStack extends cdk.Stack {
     handler: string
   ): lambda.IFunction {
     const bundleUpdate = new lambda.Function(this, name, {
-      runtime: lambda.Runtime.Ruby25,
+      runtime: lambda.Runtime.RUBY_2_5,
       code: lambda.Code.asset("resources/bundle-update"),
       handler: handler,
       environment: {
         GIT_PROVIDER: GitProvider.Github,
         PRIVATE_TOKEN: gitProviderToken.token
       },
-      timeout: 180,
+      timeout: cdk.Duration.seconds(180),
       memorySize: 512,
       layers: [layer]
     });
@@ -60,76 +60,72 @@ export class GeminatorStack extends cdk.Stack {
 
   createUpdateGraphQlHandler(
     handler: lambda.IFunction,
-    graphqlApi: GraphQlApi
-  ) {
-    handler.grantInvoke(graphqlApi.serviceRole);
+    graphqlApi: GraphQLApi
+  ) { 
 
-    const updateGemDataSource = new CfnDataSource(this, "UpdateGemDataSource", {
-      name: "UpdateGem",
-      type: "AWS_LAMBDA",
-      apiId: graphqlApi.graphQlApiApiId,
-      lambdaConfig: {
-        lambdaFunctionArn: handler.functionArn
-      },
-      serviceRoleArn: graphqlApi.serviceRole.roleArn
-    });
+    const updateGemDataSource = new LambdaDataSource(this, "UpdateGemDataSource", {
+        name: "UpdateGem",
+        api: graphqlApi,
+        lambdaFunction: handler
+      }
+    );
 
-    new CfnResolver(this, "ArticlesPreviewResolver", {
-      dataSourceName: updateGemDataSource.dataSourceName,
-      apiId: graphqlApi.graphQlApiApiId,
+    const foo = MappingTemplate.fromString(`
+    #set( $mappedArgs = {
+      "gem_name": $context.arguments.input.gemName,
+      "project" : $context.arguments.input.projectSlug
+    } )
+
+    {
+      "version" : "2017-02-28",
+      "operation": "Invoke",
+      "payload": $util.toJson($mappedArgs)
+    }`)
+
+    const bar = MappingTemplate.fromString(`$util.toJson($ctx.result)`)
+
+    new Resolver(this, "ArticlesPreviewResolver", {
+      dataSource: updateGemDataSource,
+      api: graphqlApi,
       fieldName: "updateGem",
       typeName: "Mutation",
-      requestMappingTemplate: `
-      #set( $mappedArgs = {
-        "gem_name": $context.arguments.input.gemName,
-        "project" : $context.arguments.input.projectSlug
-      } )
-
-      {
-        "version" : "2017-02-28",
-        "operation": "Invoke",
-        "payload": $util.toJson($mappedArgs)
-      }`,
-      responseMappingTemplate: `$util.toJson($ctx.result)`
+      requestMappingTemplate: foo,
+      responseMappingTemplate: bar
     });
   }
 
   createOutdatedGraphQlHandler(
     handler: lambda.IFunction,
-    graphqlApi: GraphQlApi
+    graphqlApi: GraphQLApi
   ) {
-    handler.grantInvoke(graphqlApi.serviceRole);
 
-    const outdatedGemsDataSource = new CfnDataSource(
-      this,
-      "OutdatedGemsDataSource",
-      {
-        name: "OutdatedGems",
-        type: "AWS_LAMBDA",
-        apiId: graphqlApi.graphQlApiApiId,
-        lambdaConfig: {
-          lambdaFunctionArn: handler.functionArn
-        },
-        serviceRoleArn: graphqlApi.serviceRole.roleArn
-      }
-    );
+    const outdatedGemDatasource = new LambdaDataSource(this, "outdatedGemDatasource", {
+      name: "OutdatedGemsDataSource",
+      api: graphqlApi,
+      lambdaFunction: handler
+    }
+  );  
 
-    new CfnResolver(this, "OutdatedGemsResolver", {
-      dataSourceName: outdatedGemsDataSource.dataSourceName,
-      apiId: graphqlApi.graphQlApiApiId,
+    const foo = MappingTemplate.fromString( `
+    #set( $mappedArgs = {
+      "project" : $context.arguments.projectSlug
+    } )
+
+    {
+      "version" : "2017-02-28",
+      "operation": "Invoke",
+      "payload": $util.toJson($mappedArgs)
+    }`)
+
+    const bar = MappingTemplate.fromString(`$util.toJson($ctx.result)`)
+
+    new Resolver(this, "OutdatedGemsResolver", {
+      dataSource: outdatedGemDatasource,
+      api: graphqlApi,
       fieldName: "outdatedDependencies",
       typeName: "Query",
-      requestMappingTemplate: `
-      #set( $mappedArgs = {
-        "project" : $context.arguments.projectSlug
-      } )
-
-      {
-        "version" : "2017-02-28",
-        "operation": "Invoke",
-        "payload": $util.toJson($mappedArgs)
-      }`,
-      responseMappingTemplate: `$util.toJson($ctx.result)`
+      requestMappingTemplate: foo,
+      responseMappingTemplate: bar
     });
   }
 }

@@ -1,21 +1,22 @@
-import cdk = require("@aws-cdk/cdk");
+import cdk = require("@aws-cdk/core");
 import fs = require("fs-extra");
 import path = require("path");
 import {
   CfnGraphQLApi,
   CfnApiKey,
-  CfnGraphQLSchema
+  CfnGraphQLSchema,
+  GraphQLApi  
 } from "@aws-cdk/aws-appsync";
 import {
   Role,
   PolicyStatement,
-  PolicyStatementEffect,
   ServicePrincipal
 } from "@aws-cdk/aws-iam";
 
-export class GraphQlApi extends cdk.Construct {
+export class CustomGraphQlApi extends cdk.Construct {
   public readonly graphQlApiApiId: string;
   public readonly serviceRole: Role;
+  public readonly graphQlApiApi: GraphQLApi;
 
   constructor(parent: cdk.Construct, name: string) {
     super(parent, name);
@@ -25,48 +26,39 @@ export class GraphQlApi extends cdk.Construct {
     });
 
     logsServiceRole.addToPolicy(
-      new PolicyStatement(PolicyStatementEffect.Allow)
-        .addActions(
+      new PolicyStatement({      
+        actions: [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
-        )
-        .addResource("*")
+        ],
+        resources: ["*"]
+      })
     );
 
-    const graphQlApi = new CfnGraphQLApi(this, "GeminatorGraphQLApi", {
+    const graphQlApi = new GraphQLApi(this, "GeminatorGraphQLApi", {
       name: "GeminatorGraphQLApi",
-      authenticationType: "API_KEY",
-      logConfig: {
-        cloudWatchLogsRoleArn: logsServiceRole.roleArn,
-        fieldLogLevel: "ALL"
-      }
+      schemaDefinitionFile: path.join(__dirname, "schema.graphql")
     });
 
     const apiKey = new CfnApiKey(this, "DemoKey", {
-      apiId: graphQlApi.graphQlApiApiId
+      apiId: graphQlApi.apiId
     });
-
-    new CfnGraphQLSchema(this, "GeminatorGraphQLSchema", {
-      apiId: graphQlApi.graphQlApiApiId,
-      definition: fs
-        .readFileSync(path.join(__dirname, "schema.graphql"))
-        .toString()
-    });
-
+  
     const lambdaServiceRole = new Role(this, "CMSGraphQLLambdaRole", {
       assumedBy: new ServicePrincipal("appsync.amazonaws.com")
     });
 
-    this.graphQlApiApiId = graphQlApi.graphQlApiApiId;
+    this.graphQlApiApiId = graphQlApi.apiId;
     this.serviceRole = lambdaServiceRole;
+    this.graphQlApiApi = graphQlApi
 
-    new cdk.Output(this, "GraphQlApiUrl", {
-      value: graphQlApi.graphQlApiGraphQlUrl
+    new cdk.CfnOutput(this, "GraphQlApiUrl", {
+      value: graphQlApi.graphQlUrl
     });
 
-    new cdk.Output(this, "GraphQlApiKey", {
-      value: apiKey.apiKey
+    new cdk.CfnOutput(this, "GraphQlApiKey", {
+      value: apiKey.attrApiKey
     });
   }
 }

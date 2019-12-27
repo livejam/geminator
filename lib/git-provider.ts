@@ -1,4 +1,5 @@
-import cdk = require("@aws-cdk/cdk");
+import cdk = require("@aws-cdk/core");
+import ssm = require('@aws-cdk/aws-ssm');
 
 export enum GitProvider {
   Github = "Github",
@@ -10,19 +11,15 @@ interface GitParameter {
 }
 
 export class GitProviderParameter extends cdk.Construct {
-  public readonly token: cdk.Secret;
+  public readonly token: string;
 
   constructor(parent: cdk.Construct, name: string, props: GitParameter) {
     super(parent, name);
 
-    const accessToken = new cdk.SecretParameter(
-      this,
-      `${props.provider}Token`,
-      {
-        ssmParameter: `/CDK/${props.provider}Token`
-      }
+    const accessToken = ssm.StringParameter.valueForStringParameter(
+      this, `/CDK/${props.provider}Token`
     );
 
-    this.token = accessToken.value;
+    this.token = accessToken;
   }
 }
